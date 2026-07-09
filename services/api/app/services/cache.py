@@ -51,6 +51,9 @@ def get_cached_search(query: str, limit: int) -> Optional[List[ClubSearchResult]
         if not raw:
             return None
         data = json.loads(raw)
+        if not data:
+            client.delete(_search_key(query, limit))
+            return None
         return [ClubSearchResult.model_validate(item) for item in data]
     except Exception:
         return None
@@ -58,7 +61,7 @@ def get_cached_search(query: str, limit: int) -> Optional[List[ClubSearchResult]
 
 def set_cached_search(query: str, limit: int, results: List[ClubSearchResult], ttl_seconds: int) -> None:
     client = _get_client()
-    if not client or ttl_seconds <= 0:
+    if not client or ttl_seconds <= 0 or not results:
         return
     try:
         payload = json.dumps([result.model_dump() for result in results])

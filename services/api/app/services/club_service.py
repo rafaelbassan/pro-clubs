@@ -73,6 +73,8 @@ def _summary_needs_db_fallback(summary_data: dict, match_count: int) -> bool:
 
 def _search_clubs_from_ea(query: str, limit: int = 10) -> List[ClubSearchResult]:
     df = api_client.search_club_by_name(query, limit=limit)
+    if api_client.last_error:
+        raise RuntimeError(f"EA API indisponível: {api_client.last_error}")
     if df is None or df.empty:
         return []
     results: List[ClubSearchResult] = []

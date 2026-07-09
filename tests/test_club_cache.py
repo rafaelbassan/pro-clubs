@@ -107,6 +107,7 @@ def test_search_returns_redis_cache_without_hitting_db():
     assert results[0].club_id == "898181"
 
 
+def test_upsert_club_from_summary_updates_existing_row():
     db = MagicMock()
     existing = Club(
         id=uuid4(),

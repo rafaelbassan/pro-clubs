@@ -21,7 +21,10 @@ def search_clubs_endpoint(
     q: str = Query(..., min_length=2),
     db: Session = Depends(get_db),
 ):
-    return search_clubs(db, q)
+    try:
+        return search_clubs(db, q)
+    except RuntimeError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
 
 
 @router.get("/{club_id}", response_model=ClubResponse)
