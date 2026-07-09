@@ -1,0 +1,8 @@
+# Dev local: expõe Postgres na máquina (opcional)
+# cp infra/docker-compose.override.example.yml infra/docker-compose.override.yml
+# docker compose --project-directory . -f infra/docker-compose.yml up
+
+services:
+  postgres:
+    ports:
+      - "5432:5432"

@@ -102,3 +102,4 @@ Após subir:
 | Erro de CORS | Inclua o domínio exato em `CORS_ORIGINS` |
 | Login Google falha | Configure `NEXTAUTH_URL` + credenciais OAuth |
 | DB vazio após restart | Verifique volume `postgres_data` no compose |
+| `port is already allocated` (5432) | Postgres não expõe porta no host — faça pull do compose atualizado |
