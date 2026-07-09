@@ -1,0 +1,53 @@
+[
+  {
+    "clubId": "240",
+    "wins": "0",
+    "losses": "1",
+    "ties": "0",
+    "gamesPlayed": "1",
+    "gamesPlayedPlayoff": "0",
+    "goals": "1",
+    "goalsAgainst": "2",
+    "cleanSheets": "0",
+    "points": "0",
+    "reputationtier": "3",
+    "promotions": "0",
+    "relegations": "0",
+    "bestDivision": "6",
+    "clubInfo": {
+      "name": "Real Madrid",
+      "clubId": 240,
+      "regionId": 4539733,
+      "teamId": 243,
+      "customKit": {
+        "stadName": "King Fahd Stadium",
+        "kitId": "1990656",
+        "seasonalTeamId": "131397",
+        "seasonalKitId": "1076404224",
+        "selectedKitType": "0",
+        "customKitId": "7870",
+        "customAwayKitId": "7870",
+        "customThirdKitId": "7524",
+        "customKeeperKitId": "5025",
+        "kitColor1": "15921906",
+        "kitColor2": "1256053",
+        "kitColor3": "592397",
+        "kitColor4": "592397",
+        "kitAColor1": "858211",
+        "kitAColor2": "15921906",
+        "kitAColor3": "15921906",
+        "kitAColor4": "15921906",
+        "kitThrdColor1": "15921906",
+        "kitThrdColor2": "1259409",
+        "kitThrdColor3": "592397",
+        "kitThrdColor4": "858211",
+        "dCustomKit": "0",
+        "crestColor": "16777215",
+        "crestAssetId": "99090204"
+      }
+    },
+    "platform": "common-gen5",
+    "clubName": "Real Madrid",
+    "currentDivision": "6"
+  }
+]

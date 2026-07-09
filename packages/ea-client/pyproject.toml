@@ -1,0 +1,17 @@
+[project]
+name = "ea-client"
+version = "0.1.0"
+description = "EA FC 26 Pro Clubs API client"
+requires-python = ">=3.9"
+dependencies = [
+    "pandas>=2.0.0",
+    "requests>=2.28.0",
+]
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["ea_client*"]

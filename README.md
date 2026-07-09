@@ -1,63 +1,116 @@
-# FC26 API
+# Pro Clubs — EA FC 26
 
-This repository contains FC6 Clubs API experiement (`fc26_api.py`) that allows you to retrieve data from the EA Sports FC 26 Clubs API. With this script, you can get detailed information about any club and search for clubs by their names.
+Monorepo com três camadas:
 
-## Getting Started
+- **API** (`services/api`) — FastAPI, PostgreSQL, scraper on-demand
+- **Packages** — cliente EA, ingestão e schemas compartilhados
+- **Frontend** (`apps/web`) — Next.js (substitui o Streamlit como app principal)
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
+## Arquitetura
 
-### Prerequisites
-
-* Python 3.x
-* pandas
-* requests
-
-### Installing
-
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/1erkandogan/fc26-clubs-api.git
-   ```
-2. Install the required libraries:
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-## Usage
-
-The `fc26_api.py` script provides two main functions:
-
-* `get_club_details(club_id)`: Retrieves detailed information about a specific club.
-* `search_club_by_name(club_name)`: Searches for a club by its name and returns a list of matching clubs.
-
-### Example
-
-To use the functions, you can import them into your own Python script:
-
-```python
-from fc26_api import get_club_details, search_club_by_name
-
-# Get club details by ID
-club_id = "12345"
-club_details = get_club_details(club_id)
-print(club_details)
-
-# Search for a club by name
-club_name = "Your Club Name"
-clubs = search_club_by_name(club_name)
-print(clubs)
+```
+Browser → Next.js (3000) → FastAPI (8000) → PostgreSQL
+                              ↓
+                        EA Pro Clubs API
 ```
 
-## Built With
+- **Free:** `GET /clubs/{id}/matches` retorna as **últimas 5 partidas** sincronizadas
+- **Autenticado:** `GET /clubs/{id}/matches/history` retorna histórico acumulado no DB
+- **Sync:** `POST /clubs/{id}/sync` busca na EA e faz upsert (dedup por `match_id`)
 
-* [Python](https://www.python.org/) - The programming language used
-* [pandas](https://pandas.pydata.org/) - For data manipulation and analysis
-* [requests](https://requests.readthedocs.io/en/latest/) - For making HTTP requests
+A EA não expõe paginação de histórico — ver [docs/EA_API_LIMITS.md](docs/EA_API_LIMITS.md).
 
-## Contributing
+## Deploy (Coolify / produção)
 
-Contributions are welcome! Please feel free to submit a pull request or open an issue if you have any suggestions or find any bugs.
+Ver [docs/COOLIFY.md](docs/COOLIFY.md).
 
-## License
+## Quick start (Docker)
 
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
+```bash
+cp .env.example .env
+docker compose -f infra/docker-compose.yml up --build
+```
+
+- Web: http://localhost:3000
+- API: http://localhost:8000/docs
+- Postgres: localhost:5432
+
+## Desenvolvimento local
+
+### Backend
+
+```bash
+python3 -m venv .venv && source .venv/bin/activate
+pip install packages/ea-client packages/shared packages/ingest -r services/api/requirements.txt
+
+# Postgres (ou use docker compose só do db)
+docker compose -f infra/docker-compose.yml up postgres -d
+
+cd services/api
+export DATABASE_URL=postgresql://proclubs:proclubs@localhost:5432/proclubs
+export JWT_SECRET=dev-secret
+alembic upgrade head
+uvicorn app.main:app --reload --port 8000
+```
+
+### Frontend
+
+```bash
+cd apps/web
+npm install
+export NEXT_PUBLIC_API_URL=http://localhost:8000
+export NEXTAUTH_URL=http://localhost:3000
+export NEXTAUTH_SECRET=dev-nextauth-secret
+npm run dev
+```
+
+### CLI de extração (legado)
+
+```bash
+python extract_data.py --club-name "Real Madrid"
+```
+
+### Testes
+
+```bash
+pytest tests/ -m "not integration"
+```
+
+### Probe da API EA
+
+```bash
+python packages/ea-client/scripts/probe_history.py --club-id 240 --json
+```
+
+## Estrutura
+
+```
+proclubs/
+├── packages/
+│   ├── ea-client/       # Cliente unificado EA
+│   ├── ingest/          # Parsing + sync
+│   └── shared/          # Schemas Pydantic
+├── services/api/        # FastAPI + Alembic
+├── apps/web/            # Next.js
+├── infra/docker-compose.yml
+├── dashboard/           # Streamlit legado (referência)
+└── docs/
+```
+
+## Endpoints principais
+
+| Método | Rota | Acesso |
+|--------|------|--------|
+| GET | `/clubs/search?q=` | Público |
+| GET | `/clubs/{id}` | Público |
+| GET | `/clubs/{id}/matches` | Público (últimas 5) |
+| GET | `/clubs/{id}/matches/history` | Autenticado |
+| POST | `/clubs/{id}/sync` | Autenticado |
+| POST | `/users/me/clubs/{id}/track` | Autenticado |
+| POST | `/auth/login` | Público |
+| POST | `/auth/register` | Público |
+| POST | `/auth/google` | Público |
+
+## Licença
+
+MIT — ver [LICENSE.md](LICENSE.md)

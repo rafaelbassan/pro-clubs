@@ -1,0 +1,10 @@
+pandas>=2.0.0
+requests>=2.28.0
+pytest>=7.4.0
+
+# Legacy Streamlit dashboard (optional)
+streamlit>=1.30.0
+plotly>=5.18.0
+
+# Install local packages:
+# pip install packages/ea-client packages/shared packages/ingest -r services/api/requirements.txt

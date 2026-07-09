@@ -1,0 +1,34 @@
+{
+  "240": {
+    "name": "Real Madrid",
+    "clubId": 240,
+    "regionId": 4539733,
+    "teamId": 243,
+    "customKit": {
+      "stadName": "King Fahd Stadium",
+      "kitId": "1990656",
+      "seasonalTeamId": "131397",
+      "seasonalKitId": "1076404224",
+      "selectedKitType": "0",
+      "customKitId": "7870",
+      "customAwayKitId": "7870",
+      "customThirdKitId": "7524",
+      "customKeeperKitId": "5025",
+      "kitColor1": "15921906",
+      "kitColor2": "1256053",
+      "kitColor3": "592397",
+      "kitColor4": "592397",
+      "kitAColor1": "858211",
+      "kitAColor2": "15921906",
+      "kitAColor3": "15921906",
+      "kitAColor4": "15921906",
+      "kitThrdColor1": "15921906",
+      "kitThrdColor2": "1259409",
+      "kitThrdColor3": "592397",
+      "kitThrdColor4": "858211",
+      "dCustomKit": "0",
+      "crestColor": "16777215",
+      "crestAssetId": "99090204"
+    }
+  }
+}
