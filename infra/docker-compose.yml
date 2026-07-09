@@ -1,9 +1,9 @@
 # Variáveis vêm do .env na raiz (copie de .env.example antes do primeiro up).
 # Postgres e Redis são externos — configure DATABASE_URL e REDIS_URL.
-# Sem ports no host — Coolify roteia via rede Docker (evita conflito 8000/3000).
-
-# Postgres/Redis no Coolify: api usa rede "coolify" para resolver hostnames internos.
-# Dev local: docker network create coolify  (ou use DATABASE_URL com localhost)
+# Sem ports no host — Coolify/Traefik roteia via rede Docker.
+#
+# Coolify: sem healthcheck Docker (Traefik derruba rota se ficar unhealthy).
+# Domínio no painel: https://seu-dominio.com:3000 no serviço web.
 
 services:
   api:
@@ -23,16 +23,7 @@ services:
       TIMEZONE: ${TIMEZONE:-America/Sao_Paulo}
       CACHE_TTL_SECONDS: ${CACHE_TTL_SECONDS:-300}
       SEARCH_CACHE_TTL_SECONDS: ${SEARCH_CACHE_TTL_SECONDS:-3600}
-    healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/live')\"",
-        ]
-      interval: 10s
-      timeout: 5s
-      retries: 8
-      start_period: 90s
+      EA_HTTP_PROXY: ${EA_HTTP_PROXY:-}
 
   web:
     build:
@@ -49,16 +40,6 @@ services:
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-dev-nextauth-secret}
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
-    healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "node -e \"require('http').get('http://127.0.0.1:3000', (r) => process.exit(r.statusCode < 500 ? 0 : 1)).on('error', () => process.exit(1))\"",
-        ]
-      interval: 10s
-      timeout: 5s
-      retries: 8
-      start_period: 60s
     depends_on:
       - api
 

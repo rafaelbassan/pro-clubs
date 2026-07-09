@@ -24,7 +24,14 @@ from app.services.club_repository import (
 )
 from shared.schemas import ClubResponse, ClubSearchResult, ClubSummary, MatchRecord, PlayerStats, ResponseMeta
 
-api_client = FC26API()
+def _ea_client() -> FC26API:
+    proxies = None
+    if settings.ea_http_proxy:
+        proxies = {"http": settings.ea_http_proxy, "https": settings.ea_http_proxy}
+    return FC26API(proxies=proxies)
+
+
+api_client = _ea_client()
 RECENT_MATCHES_LIMIT = 5
 
 
@@ -118,7 +125,13 @@ def search_clubs(db: Session, query: str, limit: int = 10) -> List[ClubSearchRes
         set_cached_search(query, limit, results, settings.search_cache_ttl_seconds)
         return results
 
-    ea_results = _search_clubs_from_ea(query, limit)
+    try:
+        ea_results = _search_clubs_from_ea(query, limit)
+    except RuntimeError:
+        if db_results:
+            return db_results[:limit]
+        raise
+
     for result in ea_results:
         upsert_club_from_search_result(db, result)
     db.commit()

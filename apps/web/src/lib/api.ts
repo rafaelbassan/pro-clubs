@@ -118,7 +118,7 @@ async function apiFetch<T>(path: string, token?: string, init?: RequestInit): Pr
 }
 
 export function searchClubs(query: string) {
-  return apiFetch<ClubSearchResult[]>(`/clubs/search?q=${encodeURIComponent(query)}`);
+  return apiFetch<ClubSearchResult[]>(`/clubs/search?name=${encodeURIComponent(query)}`);
 }
 
 export function getClub(clubId: string, token?: string) {

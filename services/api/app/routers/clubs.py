@@ -18,13 +18,15 @@ api_client = FC26API()
 
 @router.get("/search", response_model=list[ClubSearchResult])
 def search_clubs_endpoint(
-    q: str = Query(..., min_length=2),
+    name: str = Query(..., min_length=2),
     db: Session = Depends(get_db),
 ):
     try:
-        return search_clubs(db, q)
+        return search_clubs(db, name)
     except RuntimeError as exc:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
 
 
 @router.get("/{club_id}", response_model=ClubResponse)

@@ -27,8 +27,11 @@ class FC26API:
         self,
         session: Optional[requests.Session] = None,
         timeout: int = 10,
+        proxies: Optional[Dict[str, str]] = None,
     ) -> None:
         self.session = session or requests.Session()
+        if proxies:
+            self.session.proxies.update(proxies)
         self.timeout = timeout
         self.headers: Dict[str, str] = {
             "authority": "proclubs.ea.com",
@@ -72,7 +75,9 @@ class FC26API:
             )
             response.raise_for_status()
         except requests.RequestException as exc:
-            raise FC26APIError(f"Request to {url} failed") from exc
+            status = getattr(getattr(exc, "response", None), "status_code", None)
+            hint = f" (HTTP {status})" if status else ""
+            raise FC26APIError(f"Request to {url} failed{hint}") from exc
 
         try:
             return response.json()

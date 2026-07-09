@@ -106,7 +106,7 @@ proclubs/
 
 | Método | Rota | Acesso |
 |--------|------|--------|
-| GET | `/clubs/search?q=` | Público |
+| GET | `/clubs/search?name=` | Público |
 | GET | `/clubs/{id}` | Público |
 | GET | `/clubs/{id}/matches` | Público (últimas 5) |
 | GET | `/clubs/{id}/matches/history` | Autenticado |

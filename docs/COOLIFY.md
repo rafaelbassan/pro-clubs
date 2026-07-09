@@ -120,5 +120,6 @@ Verifique saúde:
 | `port is already allocated` (8000/3000) | Compose não publica portas no host — faça pull do compose atualizado |
 | Container `api` unhealthy | Veja logs — migrations ou `DATABASE_URL`; `/health/live` só exige uvicorn |
 | `503` na busca | Abra `/backend/health` — se `database` falhar, corrija `DATABASE_URL` |
+| Busca retorna 502 (Cloudflare) | WAF bloqueia `?q=` — use `?name=` (já no código) ou desative regra no Cloudflare |
 | Erro de CORS | `CORS_ORIGINS` deve ser o domínio exato do web (ex: `https://proclubs.vectosports.com`) |
 | Traefik / Unhealthy no Coolify | Next.js precisa `HOSTNAME=0.0.0.0` (já no compose); redeploy após pull |

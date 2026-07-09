@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     timezone: str = "America/Sao_Paulo"
     cache_ttl_seconds: int = 300
     search_cache_ttl_seconds: int = 3600
+    ea_http_proxy: str = ""
     google_client_id: str = ""
     cors_origins: str = "http://localhost:3000"
 
