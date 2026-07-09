@@ -88,3 +88,4 @@ Verifique saúde: `GET /health` retorna `{"status":"ok","redis":"ok"}`.
 | API não sobe | `DATABASE_URL` e `REDIS_URL` são obrigatórios |
 | `redis: unavailable` | Confirme `REDIS_URL` e se o container `api` alcança o host Redis |
 | Migrations falham | Confirme que o DB existe e o user tem permissão CREATE TABLE |
+| `port is already allocated` (8000/3000) | Compose não publica portas no host — faça pull do compose atualizado |

@@ -1,0 +1,11 @@
+# Dev local: expõe portas na máquina (opcional)
+# cp infra/docker-compose.override.example.yml infra/docker-compose.override.yml
+# docker compose --project-directory . -f infra/docker-compose.yml up
+
+services:
+  api:
+    ports:
+      - "8000:8000"
+  web:
+    ports:
+      - "3000:3000"

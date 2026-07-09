@@ -31,6 +31,7 @@ cp .env.example .env
 # Edite .env se for produção (senhas, domínio, secrets)
 
 docker compose --project-directory . -f infra/docker-compose.yml up --build
+# Portas localhost: cp infra/docker-compose.override.example.yml infra/docker-compose.override.yml
 ```
 
 Todas as variáveis ficam no `.env` da raiz — o compose e o Coolify usam as **mesmas chaves** (ver `.env.example`).
