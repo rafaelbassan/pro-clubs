@@ -21,4 +21,6 @@ app.include_router(users.router)
 
 @app.get("/health")
 def health():
-    return {"status": "ok"}
+    from app.services.cache import redis_status
+
+    return {"status": "ok", "redis": redis_status()}

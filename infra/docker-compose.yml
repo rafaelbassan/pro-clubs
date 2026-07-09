@@ -1,31 +1,14 @@
 # Variáveis vêm do .env na raiz (copie de .env.example antes do primeiro up).
-# Compose lê .env do diretório onde você roda o comando (raiz do repo).
+# Postgres e Redis são externos — configure DATABASE_URL e REDIS_URL.
 
 services:
-  postgres:
-    image: postgres:16-alpine
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER:-proclubs}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-proclubs}
-      POSTGRES_DB: ${POSTGRES_DB:-proclubs}
-    # Sem ports no host — api conecta via rede interna (postgres:5432).
-    # Evita conflito com Postgres já rodando no servidor (Coolify).
-    expose:
-      - "5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-proclubs}"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-
   api:
     build:
       context: .
       dockerfile: services/api/Dockerfile
     environment:
-      DATABASE_URL: ${DATABASE_URL:-postgresql://proclubs:proclubs@postgres:5432/proclubs}
+      DATABASE_URL: ${DATABASE_URL:?DATABASE_URL is required}
+      REDIS_URL: ${REDIS_URL:?REDIS_URL is required}
       JWT_SECRET: ${JWT_SECRET:-dev-secret-change-in-production}
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
       TIMEZONE: ${TIMEZONE:-America/Sao_Paulo}
@@ -33,9 +16,6 @@ services:
       SEARCH_CACHE_TTL_SECONDS: ${SEARCH_CACHE_TTL_SECONDS:-3600}
     ports:
       - "${API_PORT:-8000}:8000"
-    depends_on:
-      postgres:
-        condition: service_healthy
 
   web:
     build:
@@ -52,6 +32,3 @@ services:
       - "${WEB_PORT:-3000}:3000"
     depends_on:
       - api
-
-volumes:
-  postgres_data:

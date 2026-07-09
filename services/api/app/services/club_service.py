@@ -10,6 +10,12 @@ from sqlalchemy.orm import Session
 
 from app.config import settings
 from app.db.models import Club, Match
+from app.services.cache import (
+    get_cached_search,
+    is_club_sync_cached,
+    mark_club_synced,
+    set_cached_search,
+)
 from app.services.club_repository import (
     club_to_search_result,
     is_metadata_fresh,
@@ -97,12 +103,18 @@ def _db_search_is_fresh(db: Session, results: List[ClubSearchResult], now: datet
 
 
 def search_clubs(db: Session, query: str, limit: int = 10) -> List[ClubSearchResult]:
-    """Search clubs: serve fresh DB hits, otherwise query EA and upsert metadata."""
+    """Search clubs: Redis → DB → EA, with upsert on stale metadata."""
+    cached = get_cached_search(query, limit)
+    if cached is not None:
+        return cached
+
     now = datetime.now(timezone.utc)
     db_results = search_clubs_from_db(db, query, limit)
 
     if db_results and _db_search_is_fresh(db, db_results, now):
-        return db_results[:limit]
+        results = db_results[:limit]
+        set_cached_search(query, limit, results, settings.search_cache_ttl_seconds)
+        return results
 
     ea_results = _search_clubs_from_ea(query, limit)
     for result in ea_results:
@@ -110,11 +122,15 @@ def search_clubs(db: Session, query: str, limit: int = 10) -> List[ClubSearchRes
     db.commit()
 
     if not ea_results:
-        return db_results[:limit]
+        results = db_results[:limit]
+        set_cached_search(query, limit, results, settings.search_cache_ttl_seconds)
+        return results
 
     seen = {result.club_id for result in ea_results}
     merged = ea_results + [result for result in db_results if result.club_id not in seen]
-    return merged[:limit]
+    results = merged[:limit]
+    set_cached_search(query, limit, results, settings.search_cache_ttl_seconds)
+    return results
 
 
 def _matches_need_player_backfill(db: Session, club: Club) -> bool:
@@ -152,7 +168,10 @@ def get_or_sync_club(db: Session, ea_club_id: str) -> Club:
         or match_count == 0
         or summary_stale
         or players_stale
-        or _sync_is_stale(club.last_synced_at if club else None, settings.cache_ttl_seconds, now)
+        or (
+            not is_club_sync_cached(ea_club_id)
+            and _sync_is_stale(club.last_synced_at if club else None, settings.cache_ttl_seconds, now)
+        )
     )
     if needs_sync:
         from ingest.sync import SyncService
@@ -167,6 +186,7 @@ def get_or_sync_club(db: Session, ea_club_id: str) -> Club:
             club.last_synced_at = now
             db.commit()
             db.refresh(club)
+            mark_club_synced(ea_club_id, settings.cache_ttl_seconds)
     if not club:
         raise ValueError(f"Club {ea_club_id} not found")
     return club

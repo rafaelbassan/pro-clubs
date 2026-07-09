@@ -33,7 +33,7 @@ async function proxyRequest(request: NextRequest, path: string[]) {
     return NextResponse.json(
       {
         detail:
-          "API indisponível. Rode: docker compose -f infra/docker-compose.yml up postgres api -d",
+          "API indisponível. Rode: docker compose --project-directory . -f infra/docker-compose.yml up api -d",
       },
       { status: 502 },
     );

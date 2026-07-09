@@ -84,7 +84,29 @@ def test_search_hits_ea_and_upserts_when_db_is_stale():
     assert results[0].club_id == "898181"
 
 
-def test_upsert_club_from_summary_updates_existing_row():
+def test_search_returns_redis_cache_without_hitting_db():
+    cached = [
+        ClubSearchResult(
+            club_id="898181",
+            name="Vibe ES",
+            current_division=5,
+            wins=10,
+            losses=2,
+            ties=1,
+            platform="common-gen5",
+        )
+    ]
+    db = MagicMock()
+
+    with patch("app.services.club_service.get_cached_search", return_value=cached) as redis_get:
+        with patch("app.services.club_service.search_clubs_from_db") as db_search:
+            results = search_clubs(db, "Vibe", limit=10)
+
+    redis_get.assert_called_once_with("Vibe", 10)
+    db_search.assert_not_called()
+    assert results[0].club_id == "898181"
+
+
     db = MagicMock()
     existing = Club(
         id=uuid4(),

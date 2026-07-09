@@ -1,14 +1,11 @@
 # Deploy no Coolify
 
-Stack: **Postgres + FastAPI + Next.js** via Docker Compose.
+Stack: **FastAPI + Next.js** via Docker Compose. **Postgres e Redis são externos** (configure no `.env`).
 
 ## 1. Subir o código no GitHub
 
-Crie um repositório vazio no GitHub (ex: `rbassan/proclubs`) e faça push:
-
 ```bash
-git remote rename origin upstream   # opcional: mantém referência ao fc26-clubs-api original
-git remote add origin https://github.com/SEU_USUARIO/proclubs.git
+git remote add origin https://github.com/SEU_USUARIO/pro-clubs.git
 git push -u origin main
 ```
 
@@ -19,24 +16,23 @@ git push -u origin main
 3. **Base Directory**: `/` (raiz do repositório)
 4. **Docker Compose location**: `infra/docker-compose.yml`
 
-> O compose usa `build.context: .` (raiz do repo). Não altere o Base Directory para `infra/`.
+## 3. Serviços externos
 
-## 3. Variáveis de ambiente (Coolify)
+### Postgres
 
-Use as **mesmas chaves** do [`.env.example`](../.env.example) no painel do Coolify
-(**Environment Variables** do Docker Compose ou por serviço).
+Crie o database `proclubs` no seu Postgres. O container `api` roda `alembic upgrade head` no start.
 
-Mínimo para produção:
+### Redis
+
+Use sua instância Redis para cache de busca e debounce de sync com a EA.
+
+## 4. Variáveis de ambiente (Coolify)
 
 ```env
-POSTGRES_USER=proclubs
-POSTGRES_PASSWORD=<senha-forte>
-POSTGRES_DB=proclubs
-
-DATABASE_URL=postgresql://proclubs:<senha-forte>@postgres:5432/proclubs
+DATABASE_URL=postgresql://usuario:senha@seu-servidor:5432/proclubs
+REDIS_URL=redis://seu-servidor:6379/0
 JWT_SECRET=<openssl rand -hex 32>
 CORS_ORIGINS=https://seu-dominio.com
-
 INTERNAL_API_URL=http://api:8000
 NEXTAUTH_URL=https://seu-dominio.com
 NEXTAUTH_SECRET=<openssl rand -hex 32>
@@ -44,21 +40,13 @@ NEXTAUTH_SECRET=<openssl rand -hex 32>
 
 Opcional: `CACHE_TTL_SECONDS`, `SEARCH_CACHE_TTL_SECONDS`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`.
 
-> `DATABASE_URL` deve usar o host **`postgres`** (nome do serviço no compose), não `localhost`.
-
 ### Referência por serviço
-
-### `postgres`
-| Variável | Valor |
-|----------|-------|
-| `POSTGRES_USER` | `proclubs` |
-| `POSTGRES_PASSWORD` | *(senha forte)* |
-| `POSTGRES_DB` | `proclubs` |
 
 ### `api`
 | Variável | Valor |
 |----------|-------|
-| `DATABASE_URL` | `postgresql://proclubs:SENHA@postgres:5432/proclubs` |
+| `DATABASE_URL` | `postgresql://USER:SENHA@HOST:5432/proclubs` |
+| `REDIS_URL` | `redis://HOST:6379/0` |
 | `JWT_SECRET` | *(string longa aleatória)* |
 | `CORS_ORIGINS` | `https://seu-dominio.com` |
 | `CACHE_TTL_SECONDS` | `300` |
@@ -73,33 +61,30 @@ Opcional: `CACHE_TTL_SECONDS`, `SEARCH_CACHE_TTL_SECONDS`, `GOOGLE_CLIENT_ID`, `
 | `GOOGLE_CLIENT_ID` | *(opcional)* |
 | `GOOGLE_CLIENT_SECRET` | *(opcional)* |
 
-> O browser usa o proxy `/backend` do Next.js — não precisa expor a API publicamente se só o web tiver domínio.
+> O browser usa o proxy `/backend` do Next.js — não precisa expor a API publicamente.
 
-## 4. Domínio e portas
+## 5. Domínio e portas
 
-Recomendado no Coolify:
+- Aponte o domínio público apenas para o serviço **`web`**
+- **`api`** fica na rede interna do compose
 
-- Aponte o domínio público apenas para o serviço **`web`** (porta 3000)
-- Deixe **`api`** e **`postgres`** na rede interna do compose
-
-Se quiser expor a API (Swagger em `/docs`), adicione um segundo domínio para `api:8000`.
-
-## 5. Primeiro deploy
-
-O container `api` roda `alembic upgrade head` automaticamente no start.
+## 6. Primeiro deploy
 
 Após subir:
 
 1. Acesse `https://seu-dominio.com`
-2. Busque um clube — a 1ª busca grava no Postgres
+2. Busque um clube — resultado cacheado no Redis, metadata no Postgres
 3. Abra o clube — sync incremental com a EA
 
-## 6. Troubleshooting
+Verifique saúde: `GET /health` retorna `{"status":"ok","redis":"ok"}`.
+
+## 7. Troubleshooting
 
 | Problema | Solução |
 |----------|---------|
 | Web não conecta na API | Confirme `INTERNAL_API_URL=http://api:8000` |
 | Erro de CORS | Inclua o domínio exato em `CORS_ORIGINS` |
 | Login Google falha | Configure `NEXTAUTH_URL` + credenciais OAuth |
-| DB vazio após restart | Verifique volume `postgres_data` no compose |
-| `port is already allocated` (5432) | Postgres não expõe porta no host — faça pull do compose atualizado |
+| API não sobe | `DATABASE_URL` e `REDIS_URL` são obrigatórios |
+| `redis: unavailable` | Confirme `REDIS_URL` e se o container `api` alcança o host Redis |
+| Migrations falham | Confirme que o DB existe e o user tem permissão CREATE TABLE |

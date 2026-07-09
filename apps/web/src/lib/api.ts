@@ -88,7 +88,7 @@ export type ClubSearchResult = {
 };
 
 const API_UNAVAILABLE =
-  "API indisponível. Inicie o backend: docker compose -f infra/docker-compose.yml up postgres api -d";
+  "API indisponível. Inicie o backend: docker compose --project-directory . -f infra/docker-compose.yml up api -d";
 
 async function apiFetch<T>(path: string, token?: string, init?: RequestInit): Promise<T> {
   const headers: Record<string, string> = {

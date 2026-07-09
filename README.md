@@ -9,9 +9,9 @@ Monorepo com três camadas:
 ## Arquitetura
 
 ```
-Browser → Next.js (3000) → FastAPI (8000) → PostgreSQL
-                              ↓
-                        EA Pro Clubs API
+Browser → Next.js (3000) → FastAPI (8000) → PostgreSQL (externo)
+                              ↓                    ↑
+                        EA Pro Clubs API      Redis (externo)
 ```
 
 - **Free:** `GET /clubs/{id}/matches` retorna as **últimas 5 partidas** sincronizadas
@@ -37,7 +37,7 @@ Todas as variáveis ficam no `.env` da raiz — o compose e o Coolify usam as **
 
 - Web: http://localhost:3000
 - API: http://localhost:8000/docs
-- Postgres: localhost:5432
+- Postgres e Redis: **externos** via `DATABASE_URL` e `REDIS_URL`
 
 ## Desenvolvimento local
 
@@ -47,12 +47,12 @@ Todas as variáveis ficam no `.env` da raiz — o compose e o Coolify usam as **
 python3 -m venv .venv && source .venv/bin/activate
 pip install packages/ea-client packages/shared packages/ingest -r services/api/requirements.txt
 
-# Postgres (ou use docker compose só do db)
-docker compose -f infra/docker-compose.yml up postgres -d
+# Postgres e Redis no seu servidor (ou local para dev)
+export DATABASE_URL=postgresql://usuario:senha@localhost:5432/proclubs
+export REDIS_URL=redis://localhost:6379/0
+export JWT_SECRET=dev-secret
 
 cd services/api
-export DATABASE_URL=postgresql://proclubs:proclubs@localhost:5432/proclubs
-export JWT_SECRET=dev-secret
 alembic upgrade head
 uvicorn app.main:app --reload --port 8000
 ```
