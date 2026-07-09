@@ -28,7 +28,11 @@ def _ea_client() -> FC26API:
     proxies = None
     if settings.ea_http_proxy:
         proxies = {"http": settings.ea_http_proxy, "https": settings.ea_http_proxy}
-    return FC26API(proxies=proxies)
+    base_url = settings.ea_proxy_base_url.strip() or None
+    extra_headers = None
+    if settings.ea_proxy_secret:
+        extra_headers = {"x-ea-proxy-key": settings.ea_proxy_secret}
+    return FC26API(proxies=proxies, base_url=base_url, extra_headers=extra_headers)
 
 
 api_client = _ea_client()
@@ -80,9 +84,7 @@ def _summary_needs_db_fallback(summary_data: dict, match_count: int) -> bool:
 
 def _search_clubs_from_ea(query: str, limit: int = 10) -> List[ClubSearchResult]:
     df = api_client.search_club_by_name(query, limit=limit)
-    if api_client.last_error:
-        raise RuntimeError(f"EA API indisponível: {api_client.last_error}")
-    if df is None or df.empty:
+    if api_client.last_error or df is None or df.empty:
         return []
     results: List[ClubSearchResult] = []
     for _, row in df.iterrows():
@@ -127,19 +129,18 @@ def search_clubs(db: Session, query: str, limit: int = 10) -> List[ClubSearchRes
 
     try:
         ea_results = _search_clubs_from_ea(query, limit)
-    except RuntimeError:
-        if db_results:
-            return db_results[:limit]
-        raise
+    except Exception:
+        ea_results = []
+
+    if not ea_results:
+        results = db_results[:limit]
+        if results:
+            set_cached_search(query, limit, results, settings.search_cache_ttl_seconds)
+        return results
 
     for result in ea_results:
         upsert_club_from_search_result(db, result)
     db.commit()
-
-    if not ea_results:
-        results = db_results[:limit]
-        set_cached_search(query, limit, results, settings.search_cache_ttl_seconds)
-        return results
 
     seen = {result.club_id for result in ea_results}
     merged = ea_results + [result for result in db_results if result.club_id not in seen]
@@ -191,17 +192,25 @@ def get_or_sync_club(db: Session, ea_club_id: str) -> Club:
     if needs_sync:
         from ingest.sync import SyncService
         from app.db.session import SessionLocal
+        from ea_client import FC26APIError
 
         existing_name = club.name if club and club.name and club.name != ea_club_id else None
         sync = SyncService(api_client, SessionLocal)
-        sync.sync_club(ea_club_id, club_name=existing_name)
-        db.expire_all()
-        club = db.query(Club).filter(Club.ea_club_id == ea_club_id).first()
-        if club:
-            club.last_synced_at = now
-            db.commit()
-            db.refresh(club)
-            mark_club_synced(ea_club_id, settings.cache_ttl_seconds)
+        try:
+            sync.sync_club(ea_club_id, club_name=existing_name)
+            db.expire_all()
+            club = db.query(Club).filter(Club.ea_club_id == ea_club_id).first()
+            if club:
+                club.last_synced_at = now
+                db.commit()
+                db.refresh(club)
+                mark_club_synced(ea_club_id, settings.cache_ttl_seconds)
+        except FC26APIError:
+            if club is None:
+                raise ValueError(f"Club {ea_club_id} not found") from None
+        except Exception:
+            if club is None:
+                raise ValueError(f"Club {ea_club_id} not found") from None
     if not club:
         raise ValueError(f"Club {ea_club_id} not found")
     return club

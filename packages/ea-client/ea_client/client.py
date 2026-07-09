@@ -28,11 +28,14 @@ class FC26API:
         session: Optional[requests.Session] = None,
         timeout: int = 10,
         proxies: Optional[Dict[str, str]] = None,
+        base_url: Optional[str] = None,
+        extra_headers: Optional[Dict[str, str]] = None,
     ) -> None:
         self.session = session or requests.Session()
         if proxies:
             self.session.proxies.update(proxies)
         self.timeout = timeout
+        self.base_url = (base_url or self.BASE_URL).rstrip("/")
         self.headers: Dict[str, str] = {
             "authority": "proclubs.ea.com",
             "accept": "application/json",
@@ -49,6 +52,8 @@ class FC26API:
             ),
             "referer": "https://proclubs.ea.com/",
         }
+        if extra_headers:
+            self.headers.update(extra_headers)
         self._last_error: Optional[FC26APIError] = None
 
     @property
@@ -58,7 +63,7 @@ class FC26API:
     def _build_url(self, endpoint: str) -> str:
         if endpoint.startswith("http"):
             return endpoint
-        return f"{self.BASE_URL}/{endpoint.lstrip('/')}"
+        return f"{self.base_url}/{endpoint.lstrip('/')}"
 
     def _request_json(
         self,
@@ -123,7 +128,11 @@ class FC26API:
         }
         if extra_params:
             params.update(extra_params)
-        payload = self._request_json("clubs/matches", params=params)
+        try:
+            payload = self._request_json("clubs/matches", params=params)
+        except FC26APIError as exc:
+            self._last_error = exc
+            return []
         if not isinstance(payload, list):
             return []
         return payload

@@ -6,14 +6,13 @@ from sqlalchemy.orm import Session
 from app.auth.deps import get_current_user, get_current_user_optional
 from app.db.models import Club, User, UserTrackedClub
 from app.db.session import get_db
-from app.services.club_service import build_club_response, get_or_sync_club, search_clubs
-from ea_client import FC26API
+from app.services.club_service import _ea_client, build_club_response, get_or_sync_club, search_clubs
 from ingest.sync import SyncService
 from app.db.session import SessionLocal
 from shared.schemas import ClubResponse, ClubSearchResult, SyncResult
 
 router = APIRouter(prefix="/clubs", tags=["clubs"])
-api_client = FC26API()
+api_client = _ea_client()
 
 
 @router.get("/search", response_model=list[ClubSearchResult])
@@ -21,12 +20,7 @@ def search_clubs_endpoint(
     name: str = Query(..., min_length=2),
     db: Session = Depends(get_db),
 ):
-    try:
-        return search_clubs(db, name)
-    except RuntimeError as exc:
-        raise HTTPException(status_code=502, detail=str(exc)) from exc
-    except Exception as exc:
-        raise HTTPException(status_code=500, detail=str(exc)) from exc
+    return search_clubs(db, name)
 
 
 @router.get("/{club_id}", response_model=ClubResponse)
@@ -38,6 +32,11 @@ def get_club(
         return build_club_response(db, club_id, authenticated=False, history=False)
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except Exception:
+        try:
+            return build_club_response(db, club_id, authenticated=False, history=False, auto_sync=False)
+        except ValueError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
 
 
 @router.get("/{club_id}/matches", response_model=ClubResponse)

@@ -24,6 +24,8 @@ A EA não expõe paginação de histórico — ver [docs/EA_API_LIMITS.md](docs/
 
 Ver [docs/COOLIFY.md](docs/COOLIFY.md).
 
+Se a EA retornar **403** no VPS, use o proxy gratuito na Vercel: [docs/VERCEL.md](docs/VERCEL.md).
+
 ## Quick start (Docker)
 
 ```bash

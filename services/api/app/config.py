@@ -13,6 +13,8 @@ class Settings(BaseSettings):
     cache_ttl_seconds: int = 300
     search_cache_ttl_seconds: int = 3600
     ea_http_proxy: str = ""
+    ea_proxy_base_url: str = ""
+    ea_proxy_secret: str = ""
     google_client_id: str = ""
     cors_origins: str = "http://localhost:3000"
 
