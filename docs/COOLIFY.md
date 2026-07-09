@@ -16,12 +16,37 @@ git push -u origin main
 
 1. **New Resource** → **Docker Compose**
 2. Conecte o repositório GitHub
-3. **Base Directory**: `/`
+3. **Base Directory**: `/` (raiz do repositório)
 4. **Docker Compose location**: `infra/docker-compose.yml`
+
+> O compose usa `build.context: .` (raiz do repo). Não altere o Base Directory para `infra/`.
 
 ## 3. Variáveis de ambiente (Coolify)
 
-Configure no painel do Compose (ou em cada serviço):
+Use as **mesmas chaves** do [`.env.example`](../.env.example) no painel do Coolify
+(**Environment Variables** do Docker Compose ou por serviço).
+
+Mínimo para produção:
+
+```env
+POSTGRES_USER=proclubs
+POSTGRES_PASSWORD=<senha-forte>
+POSTGRES_DB=proclubs
+
+DATABASE_URL=postgresql://proclubs:<senha-forte>@postgres:5432/proclubs
+JWT_SECRET=<openssl rand -hex 32>
+CORS_ORIGINS=https://seu-dominio.com
+
+INTERNAL_API_URL=http://api:8000
+NEXTAUTH_URL=https://seu-dominio.com
+NEXTAUTH_SECRET=<openssl rand -hex 32>
+```
+
+Opcional: `CACHE_TTL_SECONDS`, `SEARCH_CACHE_TTL_SECONDS`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`.
+
+> `DATABASE_URL` deve usar o host **`postgres`** (nome do serviço no compose), não `localhost`.
+
+### Referência por serviço
 
 ### `postgres`
 | Variável | Valor |

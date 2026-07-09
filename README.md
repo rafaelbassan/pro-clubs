@@ -28,8 +28,12 @@ Ver [docs/COOLIFY.md](docs/COOLIFY.md).
 
 ```bash
 cp .env.example .env
-docker compose -f infra/docker-compose.yml up --build
+# Edite .env se for produção (senhas, domínio, secrets)
+
+docker compose --project-directory . -f infra/docker-compose.yml up --build
 ```
+
+Todas as variáveis ficam no `.env` da raiz — o compose e o Coolify usam as **mesmas chaves** (ver `.env.example`).
 
 - Web: http://localhost:3000
 - API: http://localhost:8000/docs
