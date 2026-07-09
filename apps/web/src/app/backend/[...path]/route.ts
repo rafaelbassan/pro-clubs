@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const API_ORIGIN = process.env.INTERNAL_API_URL || "http://localhost:8000";
-const PROXY_TIMEOUT_MS = 15_000;
 
 async function proxyRequest(request: NextRequest, path: string[]) {
   const target = `${API_ORIGIN}/${path.join("/")}${request.nextUrl.search}`;
@@ -15,7 +14,6 @@ async function proxyRequest(request: NextRequest, path: string[]) {
     method: request.method,
     headers,
     cache: "no-store",
-    signal: AbortSignal.timeout(PROXY_TIMEOUT_MS),
   };
 
   if (request.method !== "GET" && request.method !== "HEAD") {
@@ -31,12 +29,14 @@ async function proxyRequest(request: NextRequest, path: string[]) {
         "content-type": res.headers.get("content-type") || "application/json",
       },
     });
-  } catch (err) {
-    const detail =
-      err instanceof Error && err.name === "TimeoutError"
-        ? `API timeout ao conectar em ${API_ORIGIN}`
-        : `API indisponível em ${API_ORIGIN}`;
-    return NextResponse.json({ detail }, { status: 502 });
+  } catch {
+    return NextResponse.json(
+      {
+        detail:
+          "API indisponível. Rode: docker compose --project-directory . -f infra/docker-compose.yml up api -d",
+      },
+      { status: 502 },
+    );
   }
 }
 
