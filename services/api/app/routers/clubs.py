@@ -6,13 +6,12 @@ from sqlalchemy.orm import Session
 from app.auth.deps import get_current_user, get_current_user_optional
 from app.db.models import Club, User, UserTrackedClub
 from app.db.session import get_db
-from app.services.club_service import _ea_client, build_club_response, get_or_sync_club, search_clubs
+from app.services.club_service import get_ea_client, build_club_response, get_or_sync_club, search_clubs
 from ingest.sync import SyncService
 from app.db.session import SessionLocal
 from shared.schemas import ClubResponse, ClubSearchResult, SyncResult
 
 router = APIRouter(prefix="/clubs", tags=["clubs"])
-api_client = _ea_client()
 
 
 @router.get("/search", response_model=list[ClubSearchResult])
@@ -68,7 +67,7 @@ def sync_club(
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
-    sync = SyncService(api_client, SessionLocal)
+    sync = SyncService(get_ea_client(), SessionLocal)
     try:
         added, total = sync.sync_club(club_id)
         club = db.query(Club).filter(Club.ea_club_id == club_id).first()

@@ -35,7 +35,12 @@ def _ea_client() -> FC26API:
     return FC26API(proxies=proxies, base_url=base_url, extra_headers=extra_headers)
 
 
-api_client = _ea_client()
+def get_ea_client() -> FC26API:
+    """Fresh client so env vars (EA_PROXY_*) apply after container start."""
+    return _ea_client()
+
+
+api_client = get_ea_client()
 RECENT_MATCHES_LIMIT = 5
 
 
@@ -83,8 +88,9 @@ def _summary_needs_db_fallback(summary_data: dict, match_count: int) -> bool:
 
 
 def _search_clubs_from_ea(query: str, limit: int = 10) -> List[ClubSearchResult]:
-    df = api_client.search_club_by_name(query, limit=limit)
-    if api_client.last_error or df is None or df.empty:
+    client = get_ea_client()
+    df = client.search_club_by_name(query, limit=limit)
+    if client.last_error or df is None or df.empty:
         return []
     results: List[ClubSearchResult] = []
     for _, row in df.iterrows():
@@ -195,7 +201,7 @@ def get_or_sync_club(db: Session, ea_club_id: str) -> Club:
         from ea_client import FC26APIError
 
         existing_name = club.name if club and club.name and club.name != ea_club_id else None
-        sync = SyncService(api_client, SessionLocal)
+        sync = SyncService(get_ea_client(), SessionLocal)
         try:
             sync.sync_club(ea_club_id, club_name=existing_name)
             db.expire_all()

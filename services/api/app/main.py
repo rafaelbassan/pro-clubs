@@ -33,7 +33,12 @@ def health():
     """Readiness — DB and Redis must be reachable for traffic."""
     from app.services.cache import redis_status
 
-    payload: dict = {"status": "ok", "database": "ok", "redis": redis_status()}
+    payload: dict = {
+        "status": "ok",
+        "database": "ok",
+        "redis": redis_status(),
+        "ea_proxy": "configured" if settings.ea_proxy_base_url.strip() else "direct",
+    }
     status_code = 200
 
     try:
