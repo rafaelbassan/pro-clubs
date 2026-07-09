@@ -35,6 +35,8 @@ services:
     expose:
       - "3000"
     environment:
+      HOSTNAME: "0.0.0.0"
+      PORT: "3000"
       INTERNAL_API_URL: ${INTERNAL_API_URL:-http://api:8000}
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
       NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
@@ -49,7 +51,7 @@ services:
         ]
       interval: 10s
       timeout: 5s
-      retries: 5
-      start_period: 30s
+      retries: 8
+      start_period: 60s
     depends_on:
       - api

@@ -16,15 +16,42 @@ git push -u origin main
 3. **Base Directory**: `/` (raiz do repositório)
 4. **Docker Compose location**: `infra/docker-compose.yml`
 
-## 3. Serviços externos
+## 3. Postgres e Redis no Coolify
 
-### Postgres
+Se o Postgres/Redis foram criados **no Coolify** (não em servidor externo), o hostname interno (ex: `ddc0ab017lg73w1dbdovsac9`) **só funciona** se o compose estiver na mesma rede Docker.
 
-Crie o database `proclubs` no seu Postgres. O container `api` roda `alembic upgrade head` no start.
+### Passo obrigatório: Connect to Predefined Network
 
-### Redis
+1. Abra o recurso **Docker Compose** (pro-clubs) no Coolify
+2. Ative **Connect to Predefined Network** (ou *Connect To Predefined Network*)
+3. Salve e faça **Redeploy**
 
-Use sua instância Redis para cache de busca e debounce de sync com a EA.
+Sem isso, o container `api` fica isolado e você verá:
+
+```
+could not translate host name "ddc0ab017lg73w1dbdovsac9" to address
+```
+
+### Mesmo projeto
+
+Postgres, Redis e o Docker Compose devem estar no **mesmo projeto** no Coolify.
+
+### Hostname correto
+
+Use a URL interna que o Coolify mostra no painel do Postgres/Redis. Se não resolver, confira no servidor:
+
+```bash
+docker ps --format '{{.Names}}' | grep -i postgres
+docker network inspect coolify
+```
+
+Às vezes o hostname é só o UUID (ex: `ddc0ab017lg73w1dbdovsac9`), às vezes o nome completo do container.
+
+### Alternativa: URL pública
+
+Se a rede interna continuar falhando, use a **URL pública** do Postgres/Redis no painel do Coolify (IP do servidor + porta exposta). Menos ideal, mas funciona.
+
+O container `api` roda `alembic upgrade head` no start.
 
 ## 4. Variáveis de ambiente (Coolify)
 
@@ -90,8 +117,9 @@ Verifique saúde:
 | Login Google falha | Configure `NEXTAUTH_URL` + credenciais OAuth |
 | API não sobe | `DATABASE_URL` e `REDIS_URL` são obrigatórios |
 | `redis: unavailable` | Confirme `REDIS_URL` e se o container `api` alcança o host Redis |
-| Migrations falham | Confirme que o DB existe e o user tem permissão CREATE TABLE |
+| `could not translate host name` | Ative **Connect to Predefined Network** no compose; Postgres/Redis no mesmo projeto |
 | `port is already allocated` (8000/3000) | Compose não publica portas no host — faça pull do compose atualizado |
 | Container `api` unhealthy | Veja logs — migrations ou `DATABASE_URL`; `/health/live` só exige uvicorn |
 | `503` na busca | Abra `/backend/health` — se `database` falhar, corrija `DATABASE_URL` |
 | Erro de CORS | `CORS_ORIGINS` deve ser o domínio exato do web (ex: `https://proclubs.vectosports.com`) |
+| Traefik / Unhealthy no Coolify | Next.js precisa `HOSTNAME=0.0.0.0` (já no compose); redeploy após pull |
