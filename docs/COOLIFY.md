@@ -120,7 +120,8 @@ Verifique saúde:
 | `port is already allocated` (8000/3000) | Compose não publica portas no host — faça pull do compose atualizado |
 | Container `api` unhealthy | Veja logs — migrations ou `DATABASE_URL`; `/health/live` só exige uvicorn |
 | `503` na busca | Abra `/backend/health` — se `database` falhar, corrija `DATABASE_URL` |
-| EA retorna 403 no servidor | A EA bloqueia IPs de datacenter. **Solução recomendada:** proxy na Vercel — veja [VERCEL.md](./VERCEL.md). Alternativas: `scripts/seed_club.py` no Mac ou `EA_HTTP_PROXY` |
+| EA retorna 403 no servidor | A EA bloqueia IPs de datacenter. O compose sobe um container **Cloudflare WARP** e a API sai por `socks5h://warp:1080` (padrão). Remova `EA_PROXY_BASE_URL`/`EA_PROXY_SECRET` do painel se estiverem setados. Alternativas: `scripts/seed_club.py` no Mac ou proxy residencial em `EA_HTTP_PROXY` |
+| Container `warp` não sobe | Host precisa permitir `NET_ADMIN`/TUN. Teste: `docker exec warp curl -x socks5h://localhost:1080 https://cloudflare.com/cdn-cgi/trace` deve mostrar `warp=on` |
 | Busca vazia em produção | Popule o Postgres com `python scripts/seed_club.py --club-id 898181 --club-name "Vibe ES"` (rodar localmente) |
 | Clube 500 / sync falha | Mesmo caso — seed local ou proxy; a API passa a servir dados do DB quando a EA falha |
 | Erro de CORS | `CORS_ORIGINS` deve ser o domínio exato do web (ex: `https://proclubs.vectosports.com`) |

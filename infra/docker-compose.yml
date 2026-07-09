@@ -23,9 +23,32 @@ services:
       TIMEZONE: ${TIMEZONE:-America/Sao_Paulo}
       CACHE_TTL_SECONDS: ${CACHE_TTL_SECONDS:-300}
       SEARCH_CACHE_TTL_SECONDS: ${SEARCH_CACHE_TTL_SECONDS:-3600}
-      EA_HTTP_PROXY: ${EA_HTTP_PROXY:-}
+      # EA bloqueia IPs de datacenter — saída via Cloudflare WARP (container warp)
+      EA_HTTP_PROXY: ${EA_HTTP_PROXY:-socks5h://warp:1080}
       EA_PROXY_BASE_URL: ${EA_PROXY_BASE_URL:-}
       EA_PROXY_SECRET: ${EA_PROXY_SECRET:-}
+    depends_on:
+      - warp
+
+  # Cloudflare WARP — proxy SOCKS5 para as chamadas à EA (IP Cloudflare, não o da VPS)
+  warp:
+    image: caomingjun/warp
+    restart: unless-stopped
+    expose:
+      - "1080"
+    environment:
+      WARP_SLEEP: "2"
+    device_cgroup_rules:
+      - "c 10:200 rwm"
+    cap_add:
+      - MKNOD
+      - AUDIT_WRITE
+      - NET_ADMIN
+    sysctls:
+      net.ipv6.conf.all.disable_ipv6: 0
+      net.ipv4.conf.all.src_valid_mark: 1
+    volumes:
+      - warp-data:/var/lib/cloudflare-warp
 
   web:
     build:
@@ -49,3 +72,6 @@ networks:
   coolify:
     external: true
     name: coolify
+
+volumes:
+  warp-data:

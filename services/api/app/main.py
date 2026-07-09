@@ -37,7 +37,11 @@ def health():
         "status": "ok",
         "database": "ok",
         "redis": redis_status(),
-        "ea_proxy": "configured" if settings.ea_proxy_base_url.strip() else "direct",
+        "ea_proxy": (
+            "vercel" if settings.ea_proxy_base_url.strip()
+            else "http_proxy" if settings.ea_http_proxy.strip()
+            else "direct"
+        ),
     }
     status_code = 200
 
