@@ -1,11 +1,18 @@
-# Dev local: expõe portas na máquina (opcional)
+# Dev local: expõe portas e remove rede coolify (use DATABASE_URL com localhost)
 # cp infra/docker-compose.override.example.yml infra/docker-compose.override.yml
 # docker compose --project-directory . -f infra/docker-compose.yml up
 
 services:
   api:
+    networks:
+      - default
     ports:
       - "8000:8000"
   web:
     ports:
       - "3000:3000"
+
+networks:
+  coolify:
+    external: false
+    name: coolify-unused

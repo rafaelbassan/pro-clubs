@@ -2,6 +2,9 @@
 # Postgres e Redis são externos — configure DATABASE_URL e REDIS_URL.
 # Sem ports no host — Coolify roteia via rede Docker (evita conflito 8000/3000).
 
+# Postgres/Redis no Coolify: api usa rede "coolify" para resolver hostnames internos.
+# Dev local: docker network create coolify  (ou use DATABASE_URL com localhost)
+
 services:
   api:
     build:
@@ -9,6 +12,9 @@ services:
       dockerfile: services/api/Dockerfile
     expose:
       - "8000"
+    networks:
+      - default
+      - coolify
     environment:
       DATABASE_URL: ${DATABASE_URL:?DATABASE_URL is required}
       REDIS_URL: ${REDIS_URL:?REDIS_URL is required}
@@ -55,3 +61,8 @@ services:
       start_period: 60s
     depends_on:
       - api
+
+networks:
+  coolify:
+    external: true
+    name: coolify

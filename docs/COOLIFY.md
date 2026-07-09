@@ -20,17 +20,16 @@ git push -u origin main
 
 Se o Postgres/Redis foram criados **no Coolify** (não em servidor externo), o hostname interno (ex: `ddc0ab017lg73w1dbdovsac9`) **só funciona** se o compose estiver na mesma rede Docker.
 
-### Passo obrigatório: Connect to Predefined Network
+### Passo obrigatório: rede Coolify
 
-1. Abra o recurso **Docker Compose** (pro-clubs) no Coolify
-2. Ative **Connect to Predefined Network** (ou *Connect To Predefined Network*)
-3. Salve e faça **Redeploy**
+O compose já conecta o serviço **`api`** à rede Docker `coolify` (hostnames internos do Postgres/Redis).
 
-Sem isso, o container `api` fica isolado e você verá:
+Confirme também no painel do compose:
 
-```
-could not translate host name "ddc0ab017lg73w1dbdovsac9" to address
-```
+1. **Connect to Predefined Network** — ativado (recomendado)
+2. Postgres, Redis e compose no **mesmo projeto**
+
+Se ainda falhar DNS, use a URL **pública** do Postgres no `DATABASE_URL`.
 
 ### Mesmo projeto
 
