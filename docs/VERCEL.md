@@ -11,8 +11,9 @@ Coolify (API) → Vercel (apps/ea-proxy) → proclubs.ea.com
 1. Acesse [vercel.com](https://vercel.com) e crie conta (GitHub é o mais fácil).
 2. **Add New Project** → importe o repositório `pro-clubs`.
 3. **Root Directory:** `apps/ea-proxy` (obrigatório).
-4. Framework: Next.js (detectado automaticamente).
-5. Em **Environment Variables**, adicione:
+4. **Framework Preset:** Next.js.
+5. **Output Directory:** deixe **vazio** (não use `public` — isso é só para sites estáticos).
+6. Em **Environment Variables**, adicione:
 
    | Variável | Valor |
    |----------|--------|
@@ -21,6 +22,14 @@ Coolify (API) → Vercel (apps/ea-proxy) → proclubs.ea.com
 6. Clique **Deploy**.
 
 Anote a URL gerada, ex.: `https://proclubs-ea-proxy.vercel.app`
+
+## Troubleshooting
+
+| Erro | Solução |
+|------|---------|
+| `No Output Directory named "public"` | Em **Project Settings → Build & Development**, apague o **Output Directory** (deixe em branco) e confirme **Framework: Next.js** |
+| 401 Unauthorized | `EA_PROXY_SECRET` diferente entre Vercel e Coolify |
+| 502 no proxy | EA lenta; no Hobby o timeout é ~10s |
 
 ## 2. Testar o proxy
 
