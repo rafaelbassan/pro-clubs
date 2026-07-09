@@ -9,6 +9,7 @@ from ingest.players import aggregate_squad
 from sqlalchemy.orm import Session
 
 from app.config import settings
+from app.ea_proxy import ea_proxy_mode, resolve_ea_proxy_url
 from app.db.models import Club, Match
 from app.services.cache import (
     get_cached_search,
@@ -26,8 +27,9 @@ from shared.schemas import ClubResponse, ClubSearchResult, ClubSummary, MatchRec
 
 def _ea_client() -> FC26API:
     proxies = None
-    if settings.ea_http_proxy:
-        proxies = {"http": settings.ea_http_proxy, "https": settings.ea_http_proxy}
+    proxy_url = resolve_ea_proxy_url()
+    if proxy_url:
+        proxies = {"http": proxy_url, "https": proxy_url}
     base_url = settings.ea_proxy_base_url.strip() or None
     extra_headers = None
     if settings.ea_proxy_secret:

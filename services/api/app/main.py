@@ -31,17 +31,14 @@ def health_live():
 @app.get("/health")
 def health():
     """Readiness — DB and Redis must be reachable for traffic."""
+    from app.ea_proxy import ea_proxy_mode
     from app.services.cache import redis_status
 
     payload: dict = {
         "status": "ok",
         "database": "ok",
         "redis": redis_status(),
-        "ea_proxy": (
-            "vercel" if settings.ea_proxy_base_url.strip()
-            else "http_proxy" if settings.ea_http_proxy.strip()
-            else "direct"
-        ),
+        "ea_proxy": ea_proxy_mode(),
     }
     status_code = 200
 
