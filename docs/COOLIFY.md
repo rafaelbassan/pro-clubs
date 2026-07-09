@@ -76,7 +76,10 @@ Após subir:
 2. Busque um clube — resultado cacheado no Redis, metadata no Postgres
 3. Abra o clube — sync incremental com a EA
 
-Verifique saúde: `GET /health` retorna `{"status":"ok","redis":"ok"}`.
+Verifique saúde:
+- `GET /health/live` — API no ar (usado pelo Docker healthcheck)
+- `GET /health` — DB + Redis ok (`503` se dependência falhar)
+- Via web: `https://seu-dominio.com/backend/health`
 
 ## 7. Troubleshooting
 
@@ -89,4 +92,6 @@ Verifique saúde: `GET /health` retorna `{"status":"ok","redis":"ok"}`.
 | `redis: unavailable` | Confirme `REDIS_URL` e se o container `api` alcança o host Redis |
 | Migrations falham | Confirme que o DB existe e o user tem permissão CREATE TABLE |
 | `port is already allocated` (8000/3000) | Compose não publica portas no host — faça pull do compose atualizado |
-| Container `api` unhealthy | Veja logs — geralmente `DATABASE_URL` ou `REDIS_URL` inacessível; healthcheck chama `GET /health` |
+| Container `api` unhealthy | Veja logs — migrations ou `DATABASE_URL`; `/health/live` só exige uvicorn |
+| `503` na busca | Abra `/backend/health` — se `database` falhar, corrija `DATABASE_URL` |
+| Erro de CORS | `CORS_ORIGINS` deve ser o domínio exato do web (ex: `https://proclubs.vectosports.com`) |
