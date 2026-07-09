@@ -20,16 +20,17 @@ git push -u origin main
 
 Se o Postgres/Redis foram criados **no Coolify** (não em servidor externo), o hostname interno (ex: `ddc0ab017lg73w1dbdovsac9`) **só funciona** se o compose estiver na mesma rede Docker.
 
-### Passo obrigatório: rede Coolify
+### Rede `coolify` no compose
 
-O compose já conecta o serviço **`api`** à rede Docker `coolify` (hostnames internos do Postgres/Redis).
+Os serviços **`api`** e **`web`** entram na rede Docker externa `coolify` (Postgres/Redis + roteamento Traefik).
 
-Confirme também no painel do compose:
+No painel do compose, **não precisa** ativar *Connect to Predefined Network* se o compose já declara a rede `coolify`. Se ativar os dois, o DNS interno `api` pode quebrar — nesse caso defina:
 
-1. **Connect to Predefined Network** — ativado (recomendado)
-2. Postgres, Redis e compose no **mesmo projeto**
+```env
+INTERNAL_API_URL=http://api-NOME_DO_CONTAINER:8000
+```
 
-Se ainda falhar DNS, use a URL **pública** do Postgres no `DATABASE_URL`.
+(nome visível em `docker ps` no servidor)
 
 ### Mesmo projeto
 
@@ -122,3 +123,4 @@ Verifique saúde:
 | `503` na busca | Abra `/backend/health` — se `database` falhar, corrija `DATABASE_URL` |
 | Erro de CORS | `CORS_ORIGINS` deve ser o domínio exato do web (ex: `https://proclubs.vectosports.com`) |
 | Traefik / Unhealthy no Coolify | Next.js precisa `HOSTNAME=0.0.0.0` (já no compose); redeploy após pull |
+| Cloudflare **502 Bad gateway** | Container `web` parado ou unhealthy — veja logs no Coolify; domínio deve apontar para serviço **web:3000** |

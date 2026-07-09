@@ -40,6 +40,9 @@ services:
       dockerfile: apps/web/Dockerfile
     expose:
       - "3000"
+    networks:
+      - default
+      - coolify
     environment:
       HOSTNAME: "0.0.0.0"
       PORT: "3000"
