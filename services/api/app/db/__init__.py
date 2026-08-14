@@ -1,3 +1,23 @@
-from app.db.models import Club, Match, SyncJob, User, UserTrackedClub
+from app.db.models import (
+    Club,
+    ClubMembership,
+    ClubPlayer,
+    Match,
+    ScheduledMatch,
+    SyncJob,
+    Trophy,
+    User,
+    UserTrackedClub,
+)
 
-__all__ = ["Club", "Match", "SyncJob", "User", "UserTrackedClub"]
+__all__ = [
+    "Club",
+    "ClubMembership",
+    "ClubPlayer",
+    "Match",
+    "ScheduledMatch",
+    "SyncJob",
+    "Trophy",
+    "User",
+    "UserTrackedClub",
+]

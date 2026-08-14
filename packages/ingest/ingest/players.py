@@ -34,6 +34,7 @@ def aggregate_squad(matches_raw: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
                     "passes_made": 0,
                     "pass_attempts": 0,
                     "tackles_made": 0,
+                    "tackle_attempts": 0,
                     "saves": 0,
                     "shots": 0,
                     "mom": 0,
@@ -50,6 +51,7 @@ def aggregate_squad(matches_raw: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
             row["passes_made"] += to_int(player.get("passes_made"))
             row["pass_attempts"] += to_int(player.get("pass_attempts"))
             row["tackles_made"] += to_int(player.get("tackles_made"))
+            row["tackle_attempts"] += to_int(player.get("tackle_attempts"))
             row["saves"] += to_int(player.get("saves"))
             row["shots"] += to_int(player.get("shots"))
             row["mom"] += to_int(player.get("mom"))
@@ -76,6 +78,11 @@ def aggregate_squad(matches_raw: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         row["pass_accuracy"] = (
             round(row["passes_made"] / row["pass_attempts"] * 100, 1)
             if row["pass_attempts"] > 0
+            else 0.0
+        )
+        row["tackle_accuracy"] = (
+            round(row["tackles_made"] / row["tackle_attempts"] * 100, 1)
+            if row["tackle_attempts"] > 0
             else 0.0
         )
         squad.append(row)

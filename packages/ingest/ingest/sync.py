@@ -144,6 +144,8 @@ class SyncService:
                         club_goals=record.get("club_goals", 0),
                         opponent_goals=record.get("opponent_goals", 0),
                         result=record.get("result", ""),
+                        status="approved",
+                        source="ea",
                         raw_json=safe_record,
                     )
                 )

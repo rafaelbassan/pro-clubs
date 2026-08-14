@@ -20,21 +20,22 @@ import type { MatchRecord } from "@/lib/api";
 import { Locale, matchTypeLabel, resultLabel, t } from "@/lib/i18n";
 
 const RESULT_COLORS: Record<string, string> = {
-  V: "#00e676",
-  D: "#ff5a6a",
-  E: "#ffb020",
+  V: "#157a45",
+  D: "#c2414a",
+  E: "#b8860b",
 };
 
-const AXIS_TICK = { fill: "#7b8d81", fontSize: 11 };
-const GRID_STROKE = "rgba(255,255,255,0.05)";
+const AXIS_TICK = { fill: "#5c7266", fontSize: 11 };
+const GRID_STROKE = "rgba(20, 36, 26, 0.08)";
 const TOOLTIP_STYLE = {
-  background: "#0d1418",
-  border: "1px solid rgba(255,255,255,0.12)",
+  background: "#ffffff",
+  border: "1px solid #dce5de",
   borderRadius: 12,
   fontSize: 12,
-  boxShadow: "0 8px 32px rgba(0,0,0,0.5)",
+  boxShadow: "0 8px 24px rgba(20, 36, 26, 0.1)",
+  color: "#14241a",
 };
-const LEGEND_STYLE = { fontSize: 12, color: "#b8c6bd" };
+const LEGEND_STYLE = { fontSize: 12, color: "#3d5246" };
 
 function ChartCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -165,14 +166,14 @@ export function FormChart({ matches, locale }: { matches: MatchRecord[]; locale:
           <Tooltip
             shared
             content={(props) => <FormTooltip {...props} locale={locale} />}
-            cursor={{ fill: "rgba(255,255,255,0.04)" }}
+            cursor={{ fill: "rgba(21, 122, 69, 0.06)" }}
           />
           <Legend wrapperStyle={LEGEND_STYLE} iconType="circle" iconSize={8} />
           <Bar
             yAxisId="left"
             dataKey="scored"
             name={t(locale, "charts.goals_scored")}
-            fill="#00e676"
+            fill="#157a45"
             stackId="match"
             radius={[4, 4, 0, 0]}
             maxBarSize={28}
@@ -181,7 +182,7 @@ export function FormChart({ matches, locale }: { matches: MatchRecord[]; locale:
             yAxisId="left"
             dataKey="conceded"
             name={t(locale, "charts.goals_conceded")}
-            fill="#ff5a6a"
+            fill="#c2414a"
             fillOpacity={0.85}
             stackId="match"
             radius={[0, 0, 4, 4]}
@@ -197,7 +198,7 @@ export function FormChart({ matches, locale }: { matches: MatchRecord[]; locale:
                 yAxisId="left"
                 r={7}
                 fill={RESULT_COLORS.E}
-                stroke="#05080a"
+                stroke="#ffffff"
                 strokeWidth={2}
                 ifOverflow="visible"
               />
@@ -207,7 +208,7 @@ export function FormChart({ matches, locale }: { matches: MatchRecord[]; locale:
             type="monotone"
             dataKey="form"
             name={t(locale, "charts.form_line")}
-            stroke="#ffb020"
+            stroke="#b8860b"
             strokeWidth={2.5}
             dot={false}
             activeDot={{ r: 4 }}
@@ -292,7 +293,7 @@ export function MatchTypeChart({ matches, locale }: { matches: MatchRecord[]; lo
           <CartesianGrid stroke={GRID_STROKE} vertical={false} />
           <XAxis dataKey="tipo" tick={AXIS_TICK} axisLine={false} tickLine={false} />
           <YAxis tick={AXIS_TICK} axisLine={false} tickLine={false} allowDecimals={false} />
-          <Tooltip contentStyle={TOOLTIP_STYLE} cursor={{ fill: "rgba(255,255,255,0.04)" }} />
+          <Tooltip contentStyle={TOOLTIP_STYLE} cursor={{ fill: "rgba(21, 122, 69, 0.06)" }} />
           <Legend wrapperStyle={LEGEND_STYLE} iconType="circle" iconSize={8} />
           <Bar dataKey="V" stackId="a" fill={RESULT_COLORS.V} name={resultLabel(locale, "V")} maxBarSize={44} />
           <Bar dataKey="E" stackId="a" fill={RESULT_COLORS.E} name={resultLabel(locale, "E")} maxBarSize={44} />

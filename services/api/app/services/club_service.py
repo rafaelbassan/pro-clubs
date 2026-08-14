@@ -10,7 +10,8 @@ from sqlalchemy.orm import Session
 
 from app.config import settings
 from app.ea_proxy import ea_proxy_mode, resolve_ea_proxy_url
-from app.db.models import Club, Match
+from app.db.models import Club, Match, Trophy
+from app.services.analytics import apply_player_overrides
 from app.services.cache import (
     get_cached_search,
     is_club_sync_cached,
@@ -23,6 +24,7 @@ from app.services.club_repository import (
     search_clubs_from_db,
     upsert_club_from_search_result,
 )
+from app.services.membership import get_user_role
 from shared.schemas import ClubResponse, ClubSearchResult, ClubSummary, MatchRecord, PlayerStats, ResponseMeta
 
 def _ea_client() -> FC26API:
@@ -50,6 +52,7 @@ def _match_to_record(match: Match, club: Club) -> MatchRecord:
     raw = match.raw_json or {}
     return MatchRecord(
         match_id=match.ea_match_id,
+        id=str(match.id),
         timestamp=raw.get("timestamp"),
         date=match.played_at,
         match_type=match.match_type,
@@ -62,6 +65,9 @@ def _match_to_record(match: Match, club: Club) -> MatchRecord:
         result=match.result,
         score=f"{match.club_goals}-{match.opponent_goals}",
         stadium=club.stadium,
+        status=getattr(match, "status", None) or "approved",
+        source=getattr(match, "source", None) or "ea",
+        screenshot_path=getattr(match, "screenshot_path", None),
     )
 
 
@@ -231,6 +237,7 @@ def build_club_response(
     authenticated: bool = False,
     history: bool = False,
     auto_sync: bool = True,
+    user=None,
 ) -> ClubResponse:
     if auto_sync:
         club = get_or_sync_club(db, ea_club_id)
@@ -245,14 +252,19 @@ def build_club_response(
         .order_by(Match.played_at.desc())
         .all()
     )
-    total = len(all_db_matches)
+    approved = [m for m in all_db_matches if (m.status or "approved") == "approved"]
+    pending = sum(1 for m in all_db_matches if m.status == "pending")
+    rejected = sum(1 for m in all_db_matches if m.status == "rejected")
+    total = len(approved)
 
     summary_data = dict(club.summary_json or {})
-    db_stats = _stats_from_matches(all_db_matches)
+    db_stats = _stats_from_matches(approved)
     if db_stats:
         summary_data.update(db_stats)
     elif _summary_needs_db_fallback(summary_data, total):
         summary_data.update(db_stats)
+
+    trophy_count = db.query(Trophy).filter(Trophy.club_id == club.id).count()
 
     summary = ClubSummary(
         club_id=club.ea_club_id,
@@ -272,21 +284,25 @@ def build_club_response(
         relegations=summary_data.get("relegations", 0),
         stadium=club.stadium or summary_data.get("stadium", ""),
         platform=summary_data.get("platform", "common-gen5"),
+        slug=getattr(club, "slug", None),
+        crest_url=getattr(club, "crest_url", None),
+        trophy_count=trophy_count,
     )
 
-    if history and authenticated:
-        display_matches = all_db_matches
+    if history or authenticated:
+        display_matches = approved
         filtered_to = None
-        tier = "authenticated"
+        tier = "authenticated" if authenticated else "free"
     else:
-        display_matches = all_db_matches[:RECENT_MATCHES_LIMIT]
-        filtered_to = "last_5"
+        display_matches = approved
+        filtered_to = None
         tier = "free"
 
     matches = [_match_to_record(m, club) for m in display_matches]
 
-    squad_raw = aggregate_squad([m.raw_json or {} for m in all_db_matches])
-    squad = [PlayerStats(**player) for player in squad_raw]
+    squad_raw = aggregate_squad([m.raw_json or {} for m in approved])
+    squad = apply_player_overrides(db, club, squad_raw)
+    role = get_user_role(db, user, club)
 
     return ClubResponse(
         club_id=club.ea_club_id,
@@ -299,5 +315,9 @@ def build_club_response(
             filtered_to=filtered_to,
             last_synced_at=club.last_synced_at,
             total_matches=total,
+            pending_matches=pending,
+            approved_matches=len(approved),
+            rejected_matches=rejected,
+            role=role,
         ),
     )

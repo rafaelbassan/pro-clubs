@@ -9,10 +9,10 @@ const POS_LABELS: Record<string, Record<Locale, string>> = {
 };
 
 const POS_BADGE: Record<string, string> = {
-  forward: "bg-[rgba(0,230,118,0.12)] text-[var(--pc-win)]",
-  midfielder: "bg-[rgba(0,140,255,0.12)] text-[#4db8ff]",
-  defender: "bg-[rgba(255,176,32,0.12)] text-[var(--pc-draw)]",
-  goalkeeper: "bg-[rgba(255,90,106,0.12)] text-[var(--pc-loss)]",
+  forward: "bg-[var(--pc-win-soft)] text-[var(--pc-win)]",
+  midfielder: "bg-[rgba(37,99,180,0.1)] text-[#2563b4]",
+  defender: "bg-[var(--pc-draw-soft)] text-[var(--pc-draw)]",
+  goalkeeper: "bg-[var(--pc-loss-soft)] text-[var(--pc-loss)]",
 };
 
 function posLabel(locale: Locale, pos: string) {

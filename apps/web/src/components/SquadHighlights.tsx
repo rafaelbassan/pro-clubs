@@ -38,7 +38,7 @@ function HighlightCard({
   return (
     <div className="pc-card pc-card-hover flex items-center gap-3 !p-4">
       <span
-        className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-[var(--pc-accent-border)] bg-[var(--pc-accent-soft)] ${toneClass}`}
+        className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[var(--pc-accent-soft)] ${toneClass}`}
       >
         <Icon size={18} />
       </span>

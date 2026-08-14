@@ -5,7 +5,7 @@ from sqlalchemy import text
 
 from app.config import settings
 from app.db.session import engine
-from app.routers import auth, clubs, users
+from app.routers import auth, club_extras, clubs, events, users
 
 app = FastAPI(title="Pro Clubs API", version="0.1.0")
 
@@ -19,6 +19,8 @@ app.add_middleware(
 
 app.include_router(auth.router)
 app.include_router(clubs.router)
+app.include_router(club_extras.router)
+app.include_router(events.router)
 app.include_router(users.router)
 
 

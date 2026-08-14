@@ -35,3 +35,8 @@ archive/*
 # Legacy / misc
 *.pyc
 .streamlit/credentials.toml
+
+# Temp / uploads
+.tmp-video-frames/
+*.mp4
+/tmp/proclubs-uploads/

@@ -3,7 +3,7 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
-from app.auth.deps import get_current_user, get_current_user_optional
+from app.auth.deps import get_current_user_optional
 from app.db.models import Club, User, UserTrackedClub
 from app.db.session import get_db
 from app.services.club_service import get_ea_client, build_club_response, get_or_sync_club, search_clubs
@@ -26,14 +26,17 @@ def search_clubs_endpoint(
 def get_club(
     club_id: str,
     db: Session = Depends(get_db),
+    user: User | None = Depends(get_current_user_optional),
 ):
     try:
-        return build_club_response(db, club_id, authenticated=False, history=False)
+        return build_club_response(db, club_id, authenticated=True, history=True, user=user)
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     except Exception:
         try:
-            return build_club_response(db, club_id, authenticated=False, history=False, auto_sync=False)
+            return build_club_response(
+                db, club_id, authenticated=True, history=True, auto_sync=False, user=user
+            )
         except ValueError as exc:
             raise HTTPException(status_code=404, detail=str(exc)) from exc
 
@@ -42,9 +45,10 @@ def get_club(
 def get_club_matches_today(
     club_id: str,
     db: Session = Depends(get_db),
+    user: User | None = Depends(get_current_user_optional),
 ):
     try:
-        return build_club_response(db, club_id, authenticated=False, history=False)
+        return build_club_response(db, club_id, authenticated=True, history=True, user=user)
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
 
@@ -53,10 +57,10 @@ def get_club_matches_today(
 def get_club_matches_history(
     club_id: str,
     db: Session = Depends(get_db),
-    user: User = Depends(get_current_user),
+    user: User | None = Depends(get_current_user_optional),
 ):
     try:
-        return build_club_response(db, club_id, authenticated=True, history=True)
+        return build_club_response(db, club_id, authenticated=True, history=True, user=user)
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
 
@@ -65,7 +69,6 @@ def get_club_matches_history(
 def sync_club(
     club_id: str,
     db: Session = Depends(get_db),
-    user: User = Depends(get_current_user),
 ):
     sync = SyncService(get_ea_client(), SessionLocal)
     try:

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
-import { BarChart3, ChevronRight, History, Loader2, Search, Shield, TrendingUp } from "lucide-react";
+import { BarChart3, ChevronRight, History, Loader2, Search, TrendingUp } from "lucide-react";
 import { DEFAULT_CLUB_NAME, searchClubs, type ClubSearchResult } from "@/lib/api";
 import { getRecentClubs, type RecentClub } from "@/lib/recentClubs";
 import { useLocale } from "@/components/LocaleProvider";
@@ -94,13 +94,11 @@ export default function HomePage() {
 
   return (
     <div className="animate-rise">
-      {/* Hero */}
-      <div className="mx-auto max-w-2xl pt-6 pb-10 text-center md:pt-14">
-        <span className="chip mx-auto mb-5">
-          <Shield size={13} className="text-[var(--pc-accent)]" />
+      <div className="mx-auto max-w-2xl pt-4 pb-8 text-center md:pt-12">
+        <p className="mb-4 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--pc-muted)]">
           EA SPORTS FC 26 · Pro Clubs
-        </span>
-        <h1 className="text-4xl leading-tight md:text-6xl">
+        </p>
+        <h1 className="text-[2.15rem] leading-[1.12] md:text-5xl">
           {t(locale, "home.hero_prefix")}{" "}
           <span className="text-gradient">{t(locale, "home.hero_highlight")}</span>
         </h1>
@@ -109,15 +107,17 @@ export default function HomePage() {
         </p>
       </div>
 
-      {/* Search */}
-      <form onSubmit={onSearch} className="mx-auto mb-3 flex max-w-2xl flex-col gap-3 sm:flex-row">
+      <form
+        onSubmit={onSearch}
+        className="pc-card mx-auto mb-3 flex max-w-2xl flex-col gap-3 !p-3 sm:flex-row sm:items-center"
+      >
         <div className="relative flex-1">
           <Search
             size={17}
             className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--pc-faint)]"
           />
           <input
-            className="input-field pl-10"
+            className="input-field border-transparent bg-[var(--pc-surface-muted)] pl-10 shadow-none"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder={t(locale, "sidebar.club_placeholder")}
@@ -193,7 +193,7 @@ export default function HomePage() {
           <div className="stagger grid gap-4 md:grid-cols-3">
             {features.map(([Icon, title, desc]) => (
               <div key={title} className="pc-card pc-card-hover">
-                <span className="mb-3 grid h-10 w-10 place-items-center rounded-xl border border-[var(--pc-accent-border)] bg-[var(--pc-accent-soft)] text-[var(--pc-accent)]">
+                <span className="mb-3 grid h-10 w-10 place-items-center rounded-xl bg-[var(--pc-accent-soft)] text-[var(--pc-accent)]">
                   <Icon size={18} />
                 </span>
                 <div className="font-[family-name:var(--font-display)] font-semibold">

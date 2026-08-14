@@ -19,7 +19,7 @@ function FormGuide({ matches, locale }: { matches: MatchRecord[]; locale: Locale
 
   return (
     <div className="flex items-center gap-2">
-      <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--pc-faint)]">
+      <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--pc-faint)]">
         {t(locale, "club.form")}
       </span>
       <div className="flex gap-1">
@@ -51,14 +51,14 @@ export function ClubHeader({
   return (
     <div className="pc-card mb-5 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex items-center gap-4">
-        <span className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl border border-[var(--pc-accent-border)] bg-gradient-to-br from-[var(--pc-accent-soft)] to-transparent font-[family-name:var(--font-display)] text-xl font-bold text-[var(--pc-accent)]">
+        <span className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-[var(--pc-accent-soft)] font-[family-name:var(--font-display)] text-xl font-bold text-[var(--pc-accent)]">
           {initials(name) || "?"}
         </span>
         <div className="min-w-0">
           <h1 className="truncate text-2xl md:text-3xl">{name}</h1>
           <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[var(--pc-muted)]">
             <span className="mono text-[var(--pc-faint)]">#{summary.club_id}</span>
-            {summary.stadium && <span>🏟 {summary.stadium}</span>}
+            {summary.stadium && <span>{summary.stadium}</span>}
             {summary.platform && <span className="uppercase tracking-wide">{summary.platform}</span>}
           </div>
         </div>

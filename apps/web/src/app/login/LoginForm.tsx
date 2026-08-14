@@ -68,8 +68,8 @@ export default function LoginForm() {
   return (
     <div className="mx-auto max-w-sm pt-8 md:pt-16">
       <div className="animate-rise">
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl">
+        <div className="mb-7 text-center">
+          <h1 className="text-[1.75rem]">
             {mode === "login" ? t(locale, "login.title") : t(locale, "login.register_title")}
           </h1>
           <p className="mt-2 text-sm text-[var(--pc-muted)]">{t(locale, "login.subtitle")}</p>
