@@ -146,6 +146,7 @@ function ClubShellInner({
           analytics={analytics}
           loading={loadingAnalytics}
           clubMatches={data.matches}
+          summary={summary}
         />
       )}
       {tab === "elenco" && (

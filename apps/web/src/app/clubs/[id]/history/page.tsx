@@ -42,7 +42,7 @@ export default function ClubHistoryPage() {
   }
 
   return (
-    <div className="mx-auto max-w-lg md:max-w-2xl">
+    <div className="mx-auto max-w-lg md:max-w-3xl">
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <Link
           href={`/clubs/${id}`}

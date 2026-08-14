@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Bar,
   BarChart,
@@ -9,81 +9,41 @@ import {
   Tooltip,
   XAxis,
 } from "recharts";
-import type { ClubAnalytics, MatchRecord } from "@/lib/api";
+import type { ClubAnalytics, ClubSummary, MatchRecord } from "@/lib/api";
 import { useLocale } from "@/components/LocaleProvider";
 import { t } from "@/lib/i18n";
+import { usePeriodFilter } from "@/components/club/PeriodFilter";
+import { formatPeriodLabel } from "@/components/club/IgPrimitives";
+import { TeamPerformanceCard } from "@/components/club/TeamPerformanceCard";
+import { PlayersPerformanceCard } from "@/components/club/PlayersPerformanceCard";
 
-type SubTab = "visao" | "resultados" | "confrontos";
-
-function Gauge({ value, label }: { value: number; label: string }) {
-  const clamped = Math.max(0, Math.min(100, value));
-  const r = 36;
-  const c = 2 * Math.PI * r;
-  const offset = c - (clamped / 100) * c;
-  return (
-    <div className="pc-card flex flex-col items-center justify-center py-4">
-      <svg width="96" height="96" viewBox="0 0 96 96">
-        <circle cx="48" cy="48" r={r} fill="none" stroke="var(--pc-border)" strokeWidth="8" />
-        <circle
-          cx="48"
-          cy="48"
-          r={r}
-          fill="none"
-          stroke="var(--pc-accent)"
-          strokeWidth="8"
-          strokeLinecap="round"
-          strokeDasharray={c}
-          strokeDashoffset={offset}
-          transform="rotate(-90 48 48)"
-        />
-        <text
-          x="48"
-          y="52"
-          textAnchor="middle"
-          className="fill-[var(--pc-text)] font-[family-name:var(--font-display)] text-sm font-bold"
-        >
-          {Number.isInteger(clamped) ? clamped : clamped.toFixed(1)}%
-        </text>
-      </svg>
-      <span className="mt-1 text-[10px] font-semibold uppercase tracking-wider text-[var(--pc-muted)]">
-        {label}
-      </span>
-    </div>
-  );
-}
-
-function StatCard({
-  value,
-  label,
-  tone = "default",
-}: {
-  value: string | number;
-  label: string;
-  tone?: "win" | "loss" | "default";
-}) {
-  const color =
-    tone === "win" ? "text-[var(--pc-win)]" : tone === "loss" ? "text-[var(--pc-loss)]" : "text-[var(--pc-text)]";
-  return (
-    <div className="pc-card !p-3">
-      <div className={`mono text-xl font-bold tabular-nums ${color}`}>{value}</div>
-      <div className="mt-1 text-[10px] font-semibold uppercase tracking-wider text-[var(--pc-muted)]">
-        {label}
-      </div>
-    </div>
-  );
-}
+type SubTab = "visao" | "jogadores" | "resultados" | "confrontos";
 
 export function DesempenhoPanel({
   analytics,
   loading,
   clubMatches,
+  summary,
 }: {
   analytics: ClubAnalytics | null;
   loading: boolean;
   clubMatches: MatchRecord[];
+  summary: ClubSummary;
 }) {
   const { locale } = useLocale();
+  const { filter } = usePeriodFilter();
   const [sub, setSub] = useState<SubTab>("visao");
+
+  const periodLabel = useMemo(
+    () =>
+      formatPeriodLabel(locale, {
+        dateFrom: filter.date_from,
+        dateTo: filter.date_to,
+        lastN: filter.last_n,
+        matches: analytics?.matches,
+      }),
+    [locale, filter, analytics?.matches],
+  );
 
   if (loading && !analytics) {
     return <div className="pc-card text-sm text-[var(--pc-muted)]">{t(locale, "common.loading")}</div>;
@@ -94,6 +54,7 @@ export function DesempenhoPanel({
 
   const subs: { id: SubTab; key: string }[] = [
     { id: "visao", key: "desempenho.overview" },
+    { id: "jogadores", key: "desempenho.players_card" },
     { id: "resultados", key: "desempenho.results" },
     { id: "confrontos", key: "desempenho.matchups" },
   ];
@@ -120,75 +81,16 @@ export function DesempenhoPanel({
       </div>
 
       {sub === "visao" && (
-        <div className="space-y-4">
-          <div className="pc-card !py-5">
-            <div className="flex items-center justify-between gap-3">
-              <div className="text-center">
-                <div className="mono text-lg font-bold">
-                  <span className="text-[var(--pc-win)]">{analytics.wins}</span>
-                  <span className="text-[var(--pc-faint)]"> / </span>
-                  <span className="text-[var(--pc-draw)]">{analytics.draws}</span>
-                  <span className="text-[var(--pc-faint)]"> / </span>
-                  <span className="text-[var(--pc-loss)]">{analytics.losses}</span>
-                </div>
-                <div className="mt-1 text-[10px] uppercase tracking-wider text-[var(--pc-muted)]">
-                  V · E · D
-                </div>
-              </div>
-              <div className="text-center">
-                <div className="font-[family-name:var(--font-display)] text-4xl font-extrabold text-[var(--pc-accent)]">
-                  {analytics.win_rate}%
-                </div>
-                <div className="mt-1 text-[10px] uppercase tracking-wider text-[var(--pc-muted)]">
-                  {t(locale, "metrics.win_rate")}
-                </div>
-              </div>
-              <div className="text-center">
-                <div className="mono text-2xl font-bold">{analytics.matches}</div>
-                <div className="mt-1 text-[10px] uppercase tracking-wider text-[var(--pc-muted)]">
-                  {t(locale, "desempenho.matches")}
-                </div>
-              </div>
-            </div>
-            <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-[var(--pc-surface-muted)]">
-              <div
-                className="h-full rounded-full bg-[var(--pc-accent)]"
-                style={{ width: `${Math.max(0, Math.min(100, analytics.win_rate))}%` }}
-              />
-            </div>
-          </div>
+        <div className="space-y-3">
+          <p className="text-xs text-[var(--pc-muted)]">{t(locale, "ig.share_hint")}</p>
+          <TeamPerformanceCard summary={summary} analytics={analytics} periodLabel={periodLabel} />
+        </div>
+      )}
 
-          <div className="grid grid-cols-2 gap-2">
-            <StatCard value={analytics.goals_for} label={t(locale, "desempenho.goals_for")} tone="win" />
-            <StatCard value={analytics.goals_against} label={t(locale, "desempenho.goals_against")} tone="loss" />
-            <StatCard
-              value={`${analytics.goal_diff >= 0 ? "+" : ""}${analytics.goal_diff}`}
-              label={t(locale, "desempenho.goal_diff")}
-              tone={analytics.goal_diff >= 0 ? "win" : "loss"}
-            />
-            <StatCard value={analytics.clean_sheets} label={t(locale, "desempenho.clean_sheets")} />
-            <StatCard value={analytics.goals_per_game} label={t(locale, "desempenho.goals_pg")} />
-            <StatCard value={analytics.shots_per_game} label={t(locale, "desempenho.shots_pg")} />
-            <StatCard value={`${analytics.pass_accuracy}%`} label={t(locale, "desempenho.pass_pct")} />
-            <StatCard value={`${analytics.duel_accuracy}%`} label={t(locale, "desempenho.duel_pct")} />
-          </div>
-
-          <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
-            <Gauge value={analytics.win_rate} label={t(locale, "metrics.win_rate")} />
-            <Gauge value={analytics.pass_accuracy} label={t(locale, "desempenho.pass_pct")} />
-            <Gauge value={analytics.duel_accuracy} label={t(locale, "desempenho.duel_pct")} />
-            <Gauge value={analytics.offensiveness} label={t(locale, "desempenho.offensiveness")} />
-          </div>
-
-          <div className="pc-card flex items-center gap-3">
-            <span className="grid h-10 w-10 place-items-center rounded-xl bg-[var(--pc-draw-soft)] text-sm font-bold text-[var(--pc-draw)]">
-              {analytics.best_streak}
-            </span>
-            <div>
-              <div className="text-sm font-semibold">{t(locale, "desempenho.best_streak")}</div>
-              <div className="text-xs text-[var(--pc-muted)]">{t(locale, "desempenho.best_streak_hint")}</div>
-            </div>
-          </div>
+      {sub === "jogadores" && (
+        <div className="space-y-3">
+          <p className="text-xs text-[var(--pc-muted)]">{t(locale, "ig.share_hint")}</p>
+          <PlayersPerformanceCard summary={summary} analytics={analytics} periodLabel={periodLabel} />
         </div>
       )}
 

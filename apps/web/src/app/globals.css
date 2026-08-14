@@ -489,3 +489,138 @@ select {
   color: var(--pc-accent);
   box-shadow: 0 0 20px rgba(0, 230, 118, 0.12);
 }
+
+/* ---------- Share / performance cards (light theme) ---------- */
+
+.ig-card {
+  --ig-bg: var(--pc-surface);
+  --ig-panel: var(--pc-surface);
+  --ig-border: var(--pc-border);
+  --ig-border-gold: rgba(184, 134, 11, 0.35);
+  --ig-blue: var(--pc-accent);
+  --ig-blue-bright: var(--pc-accent-bright);
+  --ig-gold: var(--pc-draw);
+  --ig-gold-soft: var(--pc-draw-soft);
+  --ig-red: var(--pc-loss);
+  --ig-muted: var(--pc-muted);
+  --ig-text: var(--pc-text);
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--pc-radius);
+  border: 1px solid var(--pc-border);
+  background: var(--pc-surface);
+  color: var(--pc-text);
+  box-shadow: var(--pc-shadow);
+  padding: 1.1rem 1rem 1.25rem;
+}
+
+.ig-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+.ig-panel {
+  border-radius: var(--pc-radius-sm);
+  border: 1px solid var(--pc-border);
+  background: var(--pc-surface-muted);
+  padding: 0.85rem;
+}
+
+.ig-panel-gold {
+  border-color: var(--ig-border-gold);
+  background: var(--pc-draw-soft);
+}
+
+.ig-label {
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--pc-muted);
+}
+
+.ig-value {
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  color: var(--pc-text);
+}
+
+.ig-bar {
+  height: 0.45rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(20, 36, 26, 0.08);
+}
+
+.ig-bar > span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--pc-accent-dim), var(--pc-accent-bright));
+}
+
+.ig-bar-gold > span {
+  background: linear-gradient(90deg, #9a7209, var(--pc-draw));
+}
+
+.ig-brick {
+  display: flex;
+  gap: 2px;
+  height: 0.55rem;
+}
+
+.ig-brick > i {
+  flex: 1;
+  border-radius: 2px;
+  background: rgba(20, 36, 26, 0.1);
+}
+
+.ig-brick > i.on {
+  background: var(--pc-accent);
+}
+
+.ig-brick-gold > i.on {
+  background: var(--pc-draw);
+}
+
+.ig-ring {
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+
+.ig-footer {
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--pc-faint);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.ig-footer::before,
+.ig-footer::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--pc-border-strong), transparent);
+}
+
+.ig-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border-radius: 999px;
+  border: 1px solid var(--pc-border);
+  background: var(--pc-surface);
+  padding: 0.25rem 0.65rem;
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--pc-text-secondary);
+  box-shadow: var(--pc-shadow);
+}
